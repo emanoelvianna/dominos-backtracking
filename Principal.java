@@ -1,5 +1,8 @@
-package dominos;
+package br.com.principal;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Principal {
@@ -54,28 +57,30 @@ public class Principal {
 		if (entrada.isEmpty() || (tentativa > entrada.size() - 1)) {
 			return usadas;
 		} else {
-			if (!entrada.isEmpty() && usadas.get(usadas.size() - 1).getB() == entrada.get(0).getA()) {
-				usadas.add(entrada.get(0));
-				usadas.get(usadas.size() - 1).setUsada(true);
-				entrada.remove(0);
-				tentativa = 0;
-				backtrack(usadas, entrada, tentativa);
-			}
-			if (!entrada.isEmpty() && usadas.get(usadas.size() - 1).getB() == entrada.get(0).getB()) {
-				usadas.add(entrada.get(0));
-				usadas.get(usadas.size() - 1).setUsada(true);
-				usadas.get(usadas.size() - 1).trocar();
-				entrada.remove(0);
-				tentativa = 0;
-				backtrack(usadas, entrada, tentativa);
-			}
-			/* peca não encaixa */
-			if (!entrada.isEmpty()) {
-				Peca peca = entrada.get(0);
-				entrada.remove(0);
-				entrada.add(peca);
-				tentativa++;
-				backtrack(usadas, entrada, tentativa);
+			for (Peca peca : entrada) {
+				if (!entrada.isEmpty() && usadas.get(usadas.size() - 1).getB() == peca.getA()) {
+					usadas.add(peca);
+					usadas.get(usadas.size() - 1).setUsada(true);
+					entrada.remove(0);
+					backtrack(usadas, entrada, 0);
+				}
+				if (!entrada.isEmpty() && usadas.get(usadas.size() - 1).getB() == peca.getB()) {
+					usadas.add(peca);
+					usadas.get(usadas.size() - 1).setUsada(true);
+					usadas.get(usadas.size() - 1).trocar();
+					entrada.remove(0);
+					backtrack(usadas, entrada, 0);
+				}
+				/* peca não encaixa */
+				if (!entrada.isEmpty()) {
+					Peca auxiliar = peca;
+					entrada.remove(0);
+					entrada.add(auxiliar);
+					tentativa++;
+					backtrack(usadas, entrada, tentativa);
+				}
+				if (entrada.isEmpty())
+					break;
 			}
 		}
 		return usadas;
@@ -104,19 +109,30 @@ public class Principal {
 
 	/* ler o arquivo com as peças */
 	public void lerArquivo() {
+		try {
+			BufferedReader info = new BufferedReader(new FileReader("case11.txt"));
+			String linha = info.readLine();
+			String[] tamanhoMatriz = linha.split(" ");
 
+			linha = info.readLine();
+			while (linha != null) {
+				String[] aux = linha.split(" ");
+
+				adicionarPeca(Integer.parseInt(aux[0]), Integer.parseInt(aux[1]));
+
+				linha = info.readLine();
+			}
+
+		} catch (IOException e) {
+			System.out.println("Erro ao abrir arquivo de movimentacoes");
+		}
 	}
 
 	public static void main(String[] args) {
 		Principal principal = new Principal();
 
 		/* simulando a leitura de um arquivo */
-		principal.adicionarPeca(2, 7);
-		principal.adicionarPeca(3, 4);
-		principal.adicionarPeca(1, 8);
-		principal.adicionarPeca(1, 2);
-		principal.adicionarPeca(4, 7);
-
+		principal.lerArquivo();
 		for (int i = 0; i < principal.getEntrada().size() - 1; i++) {
 			ArrayList<Peca> usadas = new ArrayList<>();
 			usadas.add(principal.getEntrada().get(i));
@@ -126,7 +142,6 @@ public class Principal {
 			entrada.remove(i);
 
 			ArrayList<Peca> resultado = principal.backtrack(usadas, entrada, 0);
-
 			for (Peca peca : resultado) {
 				System.out.print("[" + peca.getA() + " " + peca.getB() + "]" + " ");
 			}
