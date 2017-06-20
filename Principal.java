@@ -1,9 +1,10 @@
+
 import java.util.ArrayList;
 
 public class Principal {
 
 	/* representação de uma peça */
-	private class Peca {
+	class Peca {
 		private int a;
 		private int b;
 		private boolean usada;
@@ -46,34 +47,43 @@ public class Principal {
 	}
 
 	private ArrayList<Peca> entrada = new ArrayList<>();
+	private ArrayList<Peca> resultado;
+
+	public ArrayList<Peca> backtrack(ArrayList<Peca> usadas, ArrayList<Peca> entrada, int tentativa) {
+		if (entrada.isEmpty() || (tentativa > entrada.size() - 1)) {
+			return usadas;
+		} else {
+			if (!entrada.isEmpty() && usadas.get(usadas.size() - 1).getB() == entrada.get(0).getA()) {
+				usadas.add(entrada.get(0));
+				usadas.get(usadas.size() - 1).setUsada(true);
+				entrada.remove(0);
+				tentativa = 0;
+				backtrack(usadas, entrada, tentativa);
+			}
+			if (!entrada.isEmpty() && usadas.get(usadas.size() - 1).getB() == entrada.get(0).getB()) {
+				usadas.add(entrada.get(0));
+				usadas.get(usadas.size() - 1).setUsada(true);
+				usadas.get(usadas.size() - 1).trocar();
+				entrada.remove(0);
+				tentativa = 0;
+				backtrack(usadas, entrada, tentativa);
+			}
+			/* peca não encaixa */
+			if (!entrada.isEmpty()) {
+				Peca peca = entrada.get(0);
+				entrada.remove(0);
+				entrada.add(peca);
+				tentativa++;
+				backtrack(usadas, entrada, tentativa);
+			}
+		}
+		return usadas;
+	}
 
 	/* adicionar peca na lista de pecas */
 	public void adicionarPeca(int a, int b) {
 		Peca peca = new Peca(a, b);
 		entrada.add(peca);
-	}
-
-	/* Verifica se existe uma solução para o conjunto de entrada */
-	public ArrayList<Peca> verificarSolucao(ArrayList<Peca> usadas, ArrayList<Peca> entrada) {
-		/* enquanto existir peças sem marcar como usada */
-		for (Peca peca : entrada) {
-			if (!peca.isUsada()) {
-				if (usadas.isEmpty()) {
-					usadas.add(peca);
-				} else {
-					if (usadas.get(usadas.size() - 1).getB() == peca.getA()) {
-						usadas.add(peca);
-						peca.setUsada(true);
-					} else if (usadas.get(usadas.size() - 1).getB() == peca.getB()) {
-						peca.trocar();
-						usadas.add(peca);
-						peca.setUsada(true);
-					}
-				}
-			}
-		}
-
-		return usadas;
 	}
 
 	/* imprime a solução encontrada */
@@ -86,6 +96,11 @@ public class Principal {
 		return entrada;
 	}
 
+	/* retorna a lista de peças usadas para a solucao */
+	public ArrayList<Peca> getResultado() {
+		return resultado;
+	}
+
 	/* ler o arquivo com as peças */
 	public void lerArquivo() {
 
@@ -95,20 +110,27 @@ public class Principal {
 		Principal principal = new Principal();
 
 		/* simulando a leitura de um arquivo */
-		// principal.adicionarPeca(1, 4);
-		// principal.adicionarPeca(2, 4);
-		// principal.adicionarPeca(3, 5);
-
-		principal.adicionarPeca(8, 1);
-		principal.adicionarPeca(1, 2);
 		principal.adicionarPeca(2, 7);
-		principal.adicionarPeca(7, 4);
-		principal.adicionarPeca(4, 3);
+		principal.adicionarPeca(3, 4);
+		principal.adicionarPeca(1, 8);
+		principal.adicionarPeca(1, 2);
+		principal.adicionarPeca(4, 7);
 
-		/* verificando se existe solução */
-		ArrayList<Peca> solucao = principal.verificarSolucao(new ArrayList<>(), principal.getEntrada());
-		for (Peca peca : solucao) {
-			System.out.println(peca.getA() + " " + peca.getB());
+		for (int i = 0; i < principal.getEntrada().size() - 1; i++) {
+			ArrayList<Peca> usadas = new ArrayList<>();
+			usadas.add(principal.getEntrada().get(i));
+
+			/* removendo o elemento como possivel solução da lista de entrada */
+			ArrayList<Peca> entrada = new ArrayList<>(principal.getEntrada());
+			entrada.remove(i);
+
+			ArrayList<Peca> resultado = principal.backtrack(usadas, entrada, 0);
+
+			for (Peca peca : resultado) {
+				System.out.print("[" + peca.getA() + " " + peca.getB() + "]" + " ");
+			}
+			System.out.println("\n");
 		}
+
 	}
 }
