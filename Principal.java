@@ -79,8 +79,6 @@ public class Principal {
 					tentativa++;
 					backtrack(usadas, entrada, tentativa);
 				}
-				if (entrada.isEmpty())
-					break;
 			}
 		}
 		return usadas;
